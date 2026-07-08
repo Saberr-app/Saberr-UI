@@ -3,7 +3,7 @@
 <p align="center">
 <img alt="banner" src="/static/h-banner.svg" />
 <br/><br/>
-<a href="https://github.com/saberr-app/saberr-ui/tree/main?tab=AGPL-3.0-1-ov-file"><img alt="License" src="https://img.shields.io/github/license/saberr-app/saberr-ui"/></a>
+<a href="https://github.com/saberr-app/saberr-ui/tree/master?tab=AGPL-3.0-1-ov-file"><img alt="License" src="https://img.shields.io/github/license/saberr-app/saberr-ui"/></a>
 <a href="https://github.com/saberr-app/saberr-ui/releases"><img alt="Release" src="https://img.shields.io/github/release/saberr-app/saberr-ui"/></a>
 </p>
 
