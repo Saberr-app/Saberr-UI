@@ -42,6 +42,8 @@ const DEFAULTS: Settings = {
 		qbit_password: 'UNSET',
 		torrent_category: 'Seasonal Anime',
 		staging_directory: null,
+		qbit_remote_path_mapping_remote_path: null,
+		qbit_remote_path_mapping_local_path: null,
 		organize_downloads: true,
 		apply_release_group_as_torrent_tag: true,
 		apply_encoding_as_torrent_tag: false,
