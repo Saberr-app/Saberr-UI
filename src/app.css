@@ -1,0 +1,388 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+@import 'tw-animate-css';
+
+/* Dark mode is driven by a `.dark` class on <html> (managed by mode-watcher). */
+@custom-variant dark (&:is(.dark *));
+
+/* =============================================================================
+ * SABERR THEME — central color palette
+ * -----------------------------------------------------------------------------
+ * This is THE file to fiddle with colors. Each theme (light/dark) defines the
+ * same set of tokens so the rest of the app never hardcodes a color.
+ *
+ * Brand accent: #761717 (deep red). It is used for highlights, active states,
+ * borders and surfaces — NOT for body text (poor contrast on its own).
+ *
+ * Tweak a value here and it updates everywhere it's used.
+ * ========================================================================== */
+
+:root {
+	/* --- Brand accent (shared anchor for both themes) --- */
+	--brand: #772828; /* primary accent (deep red — too dark alone, pair in a gradient) */
+	--brand-hover: #7a3d3d; /* slightly lighter for hover */
+	--brand-active: #af2c2c; /* slightly darker for pressed */
+	--brand-light: #9d4f4f; /* lighter shade — gradient start so brand surfaces read brighter */
+
+	/* --- Affirmative action (save / authenticate / connect-style buttons) ---
+	 * Intentionally semi-transparent blue so it blends with the surface; hover is
+	 * solid for clarity. White label text stays readable on both themes. */
+	--affirmative: #3054e8ad; /* ~68% opacity blue */
+	--affirmative-hover: #5272f6ad; /* solid on hover */
+	--affirmative-foreground: #ffffff;
+
+	/* --- Info accent (informational notifications, "new" dots, neutral links) --- */
+	--info: #2f6bff; /* vivid blue */
+	/* Solid info-button fill — plain --info is tuned for tints and washes out behind white text. */
+	--info-strong: #345ec7;
+
+	/* --- Light theme surfaces & text --- */
+	--background: #f4f5f7; /* app/page background */
+	--foreground: #1b1d21; /* default text */
+
+	--card: #ffffff; /* raised surface (panels, cards) */
+	--card-foreground: #1b1d21;
+	--popover: #ffffff; /* menus, dropdowns */
+	--popover-foreground: #1b1d21;
+
+	--primary: var(--brand); /* primary actions / brand */
+	--primary-foreground: #ffffff; /* text/icon on primary */
+
+	--secondary: #e8e9ec; /* secondary buttons/surfaces */
+	--secondary-foreground: #1b1d21;
+
+	--muted: #e8e9ec; /* muted surfaces */
+	--muted-foreground: #5c6066; /* muted/secondary text */
+
+	--accent: #f1dada; /* subtle hover tint (brand-derived) */
+	--accent-foreground: #761717;
+
+	--destructive: #b3261e; /* errors / destructive actions */
+	--destructive-foreground: #ffffff;
+
+	--warning: #c2620e; /* non-critical service issues (orange) */
+	--warning-foreground: #ffffff;
+	--success: #1a7f37; /* healthy / online (green) */
+	--success-foreground: #ffffff;
+	/* Editable / "set" field values in entry forms (see EditListEntryDialog): a green
+	 * that signals "this is settable and currently has a value". Tuned as TEXT on the
+	 * page — high contrast on the surface, low on white — so a fill (checked checkbox)
+	 * pairs it with --field-value-foreground for a legible glyph. */
+	--field-value: #005819; /* dark green — reads on light surfaces */
+	--field-value-foreground: #ffffff; /* glyph on a --field-value fill */
+	--missing: #d38a1c; /* not-yet-covered share of a coverage bar (amber) */
+	--fuzzy: #a36a1e; /* RSS: value derived by fuzzy parsing (brown/amber, readable on light) */
+	--superseded: #c5ae83; /* "superseded" download chip border (muted tan — distinct, never a status hue) */
+
+	--border: #d9dbe0; /* hairlines, dividers */
+	--input: #d9dbe0; /* form field borders */
+	--ring: var(--brand); /* focus rings */
+
+	/* --- Sidebar-specific tokens (used by the nav chrome) --- */
+	--sidebar: #ffffff;
+	--sidebar-foreground: #1b1d21;
+	--sidebar-primary: var(--brand);
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #f1dada; /* hover/active row background */
+	--sidebar-accent-foreground: #761717;
+	--sidebar-border: #e2e4e8;
+	--sidebar-ring: var(--brand);
+
+	/* --- Header --- */
+	--header: #ffffff;
+	--header-foreground: #1b1d21;
+	--header-border: #d9dbe0;
+
+	/* --- Geometry --- */
+	--radius: 0.5rem;
+}
+
+.dark {
+	/* --- Dark theme surfaces & text (Sonarr-like charcoal) --- */
+	--background: #1c1f23;
+	--foreground: #e6e7e9;
+
+	--card: #25292e;
+	--card-foreground: #e6e7e9;
+	--popover: #25292e;
+	--popover-foreground: #e6e7e9;
+
+	--primary: var(--brand);
+	--primary-foreground: #ffffff;
+
+	--secondary: #2d3238;
+	--secondary-foreground: #e6e7e9;
+
+	--muted: #2d3238;
+	--muted-foreground: #9aa0a6;
+
+	--accent: #34272a; /* subtle brand-tinted hover on dark */
+	--accent-foreground: #f1c9c9;
+
+	--destructive: #d24a42;
+	--destructive-foreground: #ffffff;
+
+	--warning: #d9822b; /* non-critical service issues (orange) */
+	--warning-foreground: #ffffff;
+	--success: #2ea043; /* healthy / online (green) */
+	--success-foreground: #ffffff;
+	--field-value: #ceffd7; /* pale mint — reads as light text on dark surfaces */
+	--field-value-foreground: #0a2e16; /* dark glyph on the pale-mint fill */
+	--missing: #d38a1c; /* not-yet-covered share of a coverage bar (amber) */
+	--fuzzy: #c9913f; /* RSS: fuzzy-derived value (brighter brown/amber for dark surfaces) */
+	--superseded: #c5ae83; /* "superseded" download chip border (muted tan, both themes) */
+
+	--border: #34393f;
+	--input: #34393f;
+	--ring: #8f2a2a;
+
+	--sidebar: #25292e;
+	--sidebar-foreground: #e6e7e9;
+	--sidebar-primary: var(--brand);
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #34272a;
+	--sidebar-accent-foreground: #f1c9c9;
+	--sidebar-border: #2f343a;
+	--sidebar-ring: #8f2a2a;
+
+	--header: #25292e;
+	--header-foreground: #e6e7e9;
+	--header-border: #2f343a;
+
+	--info: #7199ff; /* brighter blue for dark surfaces */
+	--info-strong: #395db9;
+}
+
+/* Map the palette to Tailwind color utilities (bg-background, text-foreground,
+ * border-border, bg-primary, etc.). shadcn-svelte components rely on these. */
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-warning: var(--warning);
+	--color-warning-foreground: var(--warning-foreground);
+	--color-success: var(--success);
+	--color-success-foreground: var(--success-foreground);
+	--color-field-value: var(--field-value);
+	--color-field-value-foreground: var(--field-value-foreground);
+	--color-missing: var(--missing);
+	--color-fuzzy: var(--fuzzy);
+	--color-superseded: var(--superseded);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+
+	--color-brand: var(--brand);
+	--color-brand-hover: var(--brand-hover);
+	--color-brand-active: var(--brand-active);
+	--color-brand-light: var(--brand-light);
+
+	--color-affirmative: var(--affirmative);
+	--color-affirmative-hover: var(--affirmative-hover);
+	--color-affirmative-foreground: var(--affirmative-foreground);
+
+	--color-info: var(--info);
+	--color-info-strong: var(--info-strong);
+
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
+
+	--color-header: var(--header);
+	--color-header-foreground: var(--header-foreground);
+	--color-header-border: var(--header-border);
+
+	--radius-sm: calc(var(--radius) - 2px);
+	--radius-md: var(--radius);
+	--radius-lg: calc(var(--radius) + 2px);
+}
+
+@layer base {
+	* {
+		border-color: var(--border);
+	}
+	body {
+		background-color: var(--background);
+		color: var(--foreground);
+	}
+}
+
+/* =============================================================================
+ * NOTIFICATION ACCENTS
+ * -----------------------------------------------------------------------------
+ * Each level picks a single accent color; the surface tint, icon badge and chips
+ * all derive from it via color-mix. READ items simply omit `.notif-surface`
+ * (transparent background); UNREAD keep the faint tint. Tweak a level's accent
+ * (or the mix percentages) here and every notification updates.
+ * ========================================================================== */
+@layer components {
+	.notif-info {
+		--notif-accent: var(--info);
+	}
+	.notif-warning {
+		--notif-accent: var(--warning);
+	}
+	.notif-error {
+		--notif-accent: var(--destructive);
+	}
+
+	/* Faint level-tinted card background (UNREAD only). */
+	.notif-surface {
+		background-color: color-mix(in oklab, var(--notif-accent) 12%, transparent);
+	}
+	/* Saturated icon badge with a near-white glyph (reads on both themes). */
+	.notif-badge {
+		background-color: color-mix(in oklab, var(--notif-accent) 55%, transparent);
+		color: #f8f9ff;
+	}
+	/* Subtle tinted chip for identifier tags. */
+	.notif-chip {
+		background-color: color-mix(in oklab, var(--notif-accent) 16%, transparent);
+	}
+}
+
+/* =============================================================================
+ * ERROR TOASTS
+ * -----------------------------------------------------------------------------
+ * Every error toast (svelte-sonner) gets a distinct red border so failures read
+ * at a glance, regardless of theme. Success/info toasts keep the neutral border.
+ *
+ * The extra [data-styled='true'] lifts specificity above svelte-sonner's own
+ * `[data-sonner-toast][data-styled='true'] { border: 1px solid … }` rule, whose
+ * `border` shorthand is injected at runtime (after this file) and would otherwise
+ * reset our border-color back to neutral.
+ * ========================================================================== */
+[data-sonner-toast][data-styled='true'][data-type='error'] {
+	border-color: var(--destructive);
+	border-width: 1.5px;
+}
+
+/* =============================================================================
+ * SKELETON SHIMMER
+ * -----------------------------------------------------------------------------
+ * A loading placeholder: a faint surface block with a glow sweeping across it.
+ * Apply `.skeleton` to any shape (sized + rounded by utilities). Respects
+ * reduced-motion (falls back to a gentle pulse).
+ * ========================================================================== */
+.skeleton {
+	position: relative;
+	overflow: hidden;
+	background-color: color-mix(in oklab, var(--muted-foreground) 14%, transparent);
+}
+.skeleton::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	transform: translateX(-100%);
+	background: linear-gradient(
+		90deg,
+		transparent,
+		color-mix(in oklab, var(--foreground) 9%, transparent),
+		transparent
+	);
+	animation: skeleton-sweep 1.6s ease-in-out infinite;
+}
+@keyframes skeleton-sweep {
+	100% {
+		transform: translateX(100%);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.skeleton::after {
+		animation: none;
+	}
+	.skeleton {
+		animation: pulse 2s ease-in-out infinite;
+	}
+}
+
+/* Brief attention border — a glowing arc that travels around the element's
+ * perimeter a couple of laps then stops. Used to draw the eye to a field that was
+ * auto-filled with a non-obvious default (e.g. the "Track from episode" spinner
+ * when it defaults to something other than episode 1). Applied to a thin wrapper
+ * (not the field itself, whose `overflow-hidden` would clip the ::before ring). */
+@property --attention-angle {
+	syntax: '<angle>';
+	inherits: false;
+	initial-value: 0deg;
+}
+.animate-attention-border {
+	position: relative;
+}
+.animate-attention-border::before {
+	content: '';
+	position: absolute;
+	inset: -2px;
+	border-radius: 0.5rem;
+	padding: 2px;
+	background: conic-gradient(
+		from var(--attention-angle),
+		transparent 0deg,
+		var(--info) 55deg,
+		transparent 115deg,
+		transparent 360deg
+	);
+	filter: drop-shadow(0 0 3px color-mix(in srgb, var(--info) 70%, transparent));
+	/* Show only the 2px ring: outer box minus inner content-box. */
+	-webkit-mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	mask-composite: exclude;
+	pointer-events: none;
+	animation: attention-border 1.4s linear 2;
+}
+@keyframes attention-border {
+	to {
+		--attention-angle: 360deg;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.animate-attention-border::before {
+		animation: none;
+		background: none;
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--info) 45%, transparent);
+	}
+}
+
+/* Hide a scrollbar while keeping the element scrollable (used by the table's
+ * real scroll container, which is driven by a sticky proxy scrollbar instead). */
+.no-scrollbar {
+	scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+
+/* Number inputs without the native up/down spinners (list editor fields). */
+.no-spinner {
+	-moz-appearance: textfield;
+	appearance: textfield;
+}
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}

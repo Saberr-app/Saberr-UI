@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history so the changelog can diff against the last tag)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: 'Resolve version + tag (guard: tag must match package.json)'
+        id: meta
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${{ github.ref_name }}"
+            if [ "$TAG" != "v$VERSION" ]; then
+              echo "::error::Pushed tag '$TAG' != package.json 'v$VERSION'. Bump package.json or retag so the shipped __UI_VERSION__ matches the release."
+              exit 1
+            fi
+          else
+            TAG="v$VERSION" # manual run: derive the tag from package.json
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build backend-hosted bundle
+        run: npm run build-be # → build_be/ (origin-relative, ships to the backend)
+
+      - name: Package build_be into a zip
+        run: (cd build_be && zip -r "../saberr-ui-${{ steps.meta.outputs.version }}.zip" .)
+
+      - name: Create GitHub Release (auto-generated notes)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.meta.outputs.tag }}" \
+            "saberr-ui-${{ steps.meta.outputs.version }}.zip" \
+            --title "${{ steps.meta.outputs.tag }}" \
+            --target "${{ github.sha }}" \
+            --generate-notes
