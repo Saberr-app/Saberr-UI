@@ -6,16 +6,19 @@
 	import ServiceStatusBanner from '$lib/components/settings/ServiceStatusBanner.svelte';
 	import TestConnectionButton from '$lib/components/settings/TestConnectionButton.svelte';
 	import InlineMarkup from '$lib/components/settings/InlineMarkup.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import { Separator } from '$lib/components/ui/separator';
 	import { settings } from '$lib/stores/settings.svelte';
 	import { status } from '$lib/stores/status.svelte';
-	import { updateQbit, testQbit, validatePath } from '$lib/api/settings';
+	import { updateQbit, testQbit } from '$lib/api/settings';
 	import { notifySuccess } from '$lib/api/notify';
 	import type { QbitSettings, QbitSettingsUpdate, QbitConnection } from '$lib/api/types';
 	import { validateHttpUrl } from '$lib/utils/validation';
 	import { blankToNull, settingsChanged, focusFirstInvalid } from '$lib/utils/form';
 	import { tick } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	const HELP_TEXT =
 		'To enable qBittorrent web service, go to **qBittorrent** → **Options** → **WebUI** → check "**Web User Interface (Remote Control)**" → set **IP address** (or leave `*`) → set **port** → set your **username** and **password** in Authentication.';
@@ -24,12 +27,72 @@
 	const MASK = '********';
 	const passwordMask = (p: 'SET' | 'UNSET') => (p === 'SET' ? MASK : '');
 
+	// Illustrative colours for the worked example (theme-aware literal strings for Tailwind v4).
+	const C_REMOTE = 'text-purple-600 dark:text-purple-400';
+	const C_LOCAL = 'text-green-600 dark:text-green-400';
+	const C_SUFFIX = 'text-blue-700 dark:text-blue-400';
+
 	let draft = $state<QbitSettings>($state.snapshot(settings.current.qbit));
 	// The password is edited via its own field. `draft.qbit_password` keeps the GET sentinel and is
 	// excluded from both the dirty compare and the PUT body (rebuilt in `save`/`connection`).
 	let password = $state(passwordMask(settings.current.qbit.qbit_password));
 	let attempted = $state(false);
 	let formEl = $state<HTMLElement | null>(null);
+
+	// Remote path mapping: expanded whenever a value is already set (either half present), else collapsed
+	// to a "Set" link. All-or-nothing — both required once active (validated on Save).
+	let mappingActive = $state(
+		!!settings.current.qbit.qbit_remote_path_mapping_remote_path ||
+			!!settings.current.qbit.qbit_remote_path_mapping_local_path
+	);
+	let exampleOpen = $state(false);
+	// Which path field is being edited — mismatch warnings show only for the focused field.
+	let editingField = $state<'remote' | 'downloads' | null>(null);
+
+	// The downloads directory should sit under the remote path. Prefix must break on a path separator —
+	// `S:\.releasing` is NOT under `S:\.releasing-anime` — and trailing slashes are ignored.
+	const stripTrail = (s: string) => s.replace(/[/\\]+$/, '');
+	const downloadsUnderRemote = (downloads: string, remote: string) => {
+		const d = stripTrail(downloads);
+		const r = stripTrail(remote);
+		return d === r || d.startsWith(r + '/') || d.startsWith(r + '\\');
+	};
+	const pathsMismatch = $derived(
+		mappingActive &&
+			!!draft.staging_directory?.trim() &&
+			!!draft.qbit_remote_path_mapping_remote_path?.trim() &&
+			!downloadsUnderRemote(draft.staging_directory, draft.qbit_remote_path_mapping_remote_path)
+	);
+	const remoteMissing = $derived(
+		mappingActive && !draft.qbit_remote_path_mapping_remote_path?.trim()
+	);
+	const localMissing = $derived(
+		mappingActive && !draft.qbit_remote_path_mapping_local_path?.trim()
+	);
+	const mappingIncomplete = $derived(remoteMissing || localMissing);
+
+	// Clicking "Set" only shows while unset, so remote is empty here — autofill from the downloads dir.
+	function activateMapping() {
+		mappingActive = true;
+		if (draft.staging_directory?.trim() && !draft.qbit_remote_path_mapping_remote_path) {
+			draft.qbit_remote_path_mapping_remote_path = draft.staging_directory;
+		}
+	}
+	function removeMapping() {
+		draft.qbit_remote_path_mapping_remote_path = null;
+		draft.qbit_remote_path_mapping_local_path = null;
+		mappingActive = false;
+	}
+
+	// "Organize" is gated on a custom downloads directory: empty ⇒ force unchecked (control also
+	// disabled); the moment one is entered, default it to checked (user can still uncheck afterwards).
+	let stagingWasEmpty = !settings.current.qbit.staging_directory?.trim();
+	$effect(() => {
+		const empty = !draft.staging_directory?.trim();
+		if (empty) draft.organize_downloads = false;
+		else if (stagingWasEmpty) draft.organize_downloads = true;
+		stagingWasEmpty = empty;
+	});
 
 	// What to send for qbit_password: OMIT when unchanged (still the mask / still empty), null when a
 	// set password was cleared, the plaintext when newly typed.
@@ -62,8 +125,8 @@
 		settingsChanged(withoutPassword(draft), withoutPassword(settings.current.qbit)) || passwordDirty
 	);
 	const urlError = $derived(validateHttpUrl(draft.qbit_base_url));
-	const stagingEmpty = $derived(!draft.staging_directory);
-	const valid = $derived(!urlError);
+	const stagingEmpty = $derived(!draft.staging_directory?.trim());
+	const valid = $derived(!urlError && !mappingIncomplete);
 
 	function revealErrors() {
 		attempted = true;
@@ -76,6 +139,13 @@
 		draft.qbit_username = blankToNull(draft.qbit_username);
 		draft.torrent_category = blankToNull(draft.torrent_category);
 		draft.staging_directory = blankToNull(draft.staging_directory);
+		// All-or-nothing is guaranteed by `valid`; removed mapping ⇒ both null.
+		draft.qbit_remote_path_mapping_remote_path = blankToNull(
+			draft.qbit_remote_path_mapping_remote_path
+		);
+		draft.qbit_remote_path_mapping_local_path = blankToNull(
+			draft.qbit_remote_path_mapping_local_path
+		);
 
 		// Capture whether the connection changed before patching the store.
 		const before = settings.current.qbit;
@@ -157,23 +227,175 @@
 		<!-- Thicker divider between the two sections -->
 		<div class="my-1 h-[3px] w-full rounded-full bg-border"></div>
 
-		<!-- Section 2: download handling + tagging -->
+		<!-- Section 2: remote path mapping -->
+		<div class="flex flex-col gap-5">
+			<h2 class="text-lg font-semibold tracking-tight">Remote path mapping</h2>
+
+			<!-- Info banner + collapsible worked example -->
+			<div class="rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
+				<p>
+					This setting is only needed if qBittorrent reports download paths that Saberr can't
+					access, typically when qBit runs in a separate container (docker) or on another machine.
+					You might find this
+					<a
+						href="https://wiki.servarr.com/docker-guide#consistent-and-well-planned-paths"
+						target="_blank"
+						rel="noopener"
+						class="text-info underline underline-offset-2 hover:opacity-80"
+					>
+						Servarr docker guide
+					</a>
+					helpful if you're on docker.
+				</p>
+
+				<button
+					type="button"
+					onclick={() => (exampleOpen = !exampleOpen)}
+					aria-expanded={exampleOpen}
+					class="mt-2 inline-flex items-center gap-1.5 font-medium text-info transition-opacity hover:opacity-80"
+				>
+					Show example
+					<Icon
+						name="chevron-right"
+						size={14}
+						class={'transition-transform ' + (exampleOpen ? 'rotate-90' : '')}
+					/>
+				</button>
+
+				{#if exampleOpen}
+					<div
+						transition:slide={{ duration: 180 }}
+						class="mt-2 flex flex-col gap-3 rounded-md border border-border bg-background/60 p-3"
+					>
+						<div class="flex flex-col gap-1.5">
+							<p>Remote file path, as seen by qBittorrent:</p>
+							<code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] break-all">
+								<span class={C_REMOTE}>/downloads</span><span class={C_SUFFIX}
+									>/anime/Abc/Episode 1.mkv</span
+								>
+							</code>
+							<p class="mt-1">Local file path of the same file, as seen by Saberr:</p>
+							<code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] break-all">
+								<span class={C_LOCAL}>/qbit_downloads</span><span class={C_SUFFIX}
+									>/anime/Abc/Episode 1.mkv</span
+								>
+							</code>
+						</div>
+						<Icon
+							name="arrow-right"
+							size={18}
+							class="rotate-90 self-center text-muted-foreground"
+						/>
+						<div class="flex flex-col items-center gap-1 text-center">
+							<p class="font-semibold text-foreground">Mapping</p>
+							<p>
+								Remote path:
+								<code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] break-all">
+									<span class={C_REMOTE}>/downloads</span>
+								</code>
+							</p>
+							<p>
+								Local path:
+								<code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] break-all">
+									<span class={C_LOCAL}>/qbit_downloads</span>
+								</code>
+							</p>
+						</div>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Mapping control: "Set" link when unset, two inputs + "Remove mapping" when active -->
+			{#if !mappingActive}
+				<button
+					type="button"
+					onclick={activateMapping}
+					class="self-start text-sm font-medium text-info transition-opacity hover:opacity-80"
+				>
+					Set remote path mapping
+				</button>
+			{:else}
+				<div class="flex flex-col gap-3">
+					<div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+						<!-- Remote path -->
+						<div class="flex min-w-0 flex-1 flex-col gap-1.5">
+							<Label for="qbit-remote-path" required class="text-sm font-medium">Remote path</Label>
+							<Input
+								id="qbit-remote-path"
+								bind:value={draft.qbit_remote_path_mapping_remote_path}
+								aria-invalid={attempted && remoteMissing ? 'true' : undefined}
+								onfocus={() => (editingField = 'remote')}
+								onblur={() => (editingField = null)}
+							/>
+							{#if attempted && remoteMissing}
+								<p class="text-xs text-destructive">Required.</p>
+							{:else if editingField === 'remote' && pathsMismatch}
+								<p class="text-xs text-warning">
+									Tip: this doesn't match your custom downloads directory.
+								</p>
+							{:else}
+								<p class="text-xs text-muted-foreground">Root path, as seen by qBit</p>
+							{/if}
+						</div>
+
+						<!-- Arrow: points down on mobile, right on desktop -->
+						<Icon
+							name="arrow-right"
+							size={18}
+							class="shrink-0 rotate-90 self-center text-muted-foreground sm:mt-8 sm:rotate-0 sm:self-start"
+						/>
+
+						<!-- Local path -->
+						<div class="flex min-w-0 flex-1 flex-col gap-1.5">
+							<Label for="qbit-local-path" required class="text-sm font-medium">Local path</Label>
+							<Input
+								id="qbit-local-path"
+								bind:value={draft.qbit_remote_path_mapping_local_path}
+								aria-invalid={attempted && localMissing ? 'true' : undefined}
+							/>
+							{#if attempted && localMissing}
+								<p class="text-xs text-destructive">Required.</p>
+							{:else}
+								<p class="text-xs text-muted-foreground">
+									Path to the same directory, as seen by Saberr
+								</p>
+							{/if}
+						</div>
+					</div>
+
+					<button
+						type="button"
+						onclick={removeMapping}
+						class="self-start text-sm font-medium text-destructive transition-opacity hover:opacity-80"
+					>
+						Remove mapping
+					</button>
+				</div>
+			{/if}
+		</div>
+
+		<!-- Thicker divider between the two sections -->
+		<div class="my-1 h-[3px] w-full rounded-full bg-border"></div>
+
+		<!-- Section 3: download handling + tagging -->
 		<div class="flex flex-col gap-6">
 			<h2 class="text-lg font-semibold tracking-tight">Torrent Settings</h2>
 			<SettingField
-				label="Downloads directory"
+				label="Custom downloads directory"
 				htmlFor="qbit-staging"
 				help="This is where torrents are downloaded to before they're copied into their final destination"
-				description="Required to enable “Organize downloads”."
+				description="**As seen by qBittorrent**."
 			>
-				<div class="flex items-center gap-3">
-					<Input id="qbit-staging" bind:value={draft.staging_directory} placeholder="Not set" />
-					<TestConnectionButton
-						variant="outline"
-						label="Check"
-						action={() => validatePath(draft.staging_directory ?? '', false)}
-					/>
-				</div>
+				<Input
+					id="qbit-staging"
+					bind:value={draft.staging_directory}
+					placeholder="Not set"
+					onfocus={() => (editingField = 'downloads')}
+					onblur={() => (editingField = null)}
+				/>
+				{#if editingField === 'downloads' && pathsMismatch}
+					<p class="text-xs text-warning">Tip: this doesn't match with your remote mapping path.</p>
+				{/if}
 			</SettingField>
 
 			<CheckboxField

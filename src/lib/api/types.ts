@@ -108,6 +108,8 @@ export interface QbitSettings {
 	qbit_password: 'SET' | 'UNSET';
 	torrent_category: string | null;
 	staging_directory: string | null;
+	qbit_remote_path_mapping_remote_path: string | null;
+	qbit_remote_path_mapping_local_path: string | null;
 	organize_downloads: boolean;
 	apply_release_group_as_torrent_tag: boolean;
 	apply_encoding_as_torrent_tag: boolean;
