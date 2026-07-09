@@ -6,7 +6,8 @@
  * ========================================================================== */
 
 import type { TorrentListItem } from '$lib/api/types';
-import { discardTorrents, overrideTorrent } from '$lib/api/torrents';
+import { discardTorrents, overrideTorrent, downloadTorrent } from '$lib/api/torrents';
+import { buildDownloadRequest } from '$lib/rss/download-request';
 import { isDiscardable } from '$lib/rss/recognition';
 import { notifyError, notifySuccess } from '$lib/api/notify';
 import { rss } from './rss.svelte';
@@ -66,23 +67,28 @@ class RssActions {
 		await this.runMany(items, discardFuture);
 	}
 
-	/** Download/import one torrent via the override API. `runOne` is only ever called for
-	 *  recognized + tracked rows (the menu/toolbar gates guarantee it), and those always carry a
-	 *  `parent_id` — so download/import goes through override regardless of tracked range. The plain
-	 *  download API is reserved for the Identify flow (`IdentifyDialog`, unrecognized rows). */
+	/** Download/import one recognized+tracked torrent. `parent_id` is NOT guaranteed for recognized
+	 *  rows: present → override the episode's existing download; null (not yet recorded) → plain download. */
 	private async runOne(
 		item: TorrentListItem,
 		discardFuture: boolean,
 		userInitiated: boolean
 	): Promise<boolean> {
-		if (item.parent_id == null) return false; // not expected for recognized+tracked rows
 		try {
-			const res = await overrideTorrent(
-				item.parent_id,
-				{ discard_future_torrents: discardFuture },
-				userInitiated
-			);
-			rss.applyOverride(hashOf(item), res.download_id);
+			if (item.parent_id != null) {
+				const res = await overrideTorrent(
+					item.parent_id,
+					{ discard_future_torrents: discardFuture },
+					userInitiated
+				);
+				rss.applyOverride(hashOf(item), res.download_id);
+			} else {
+				const res = await downloadTorrent(
+					buildDownloadRequest(item, { discardFuture }),
+					userInitiated
+				);
+				rss.patchByHash(res);
+			}
 			rss.deselect([hashOf(item)]);
 			return true;
 		} catch {
