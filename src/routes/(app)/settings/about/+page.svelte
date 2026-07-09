@@ -263,7 +263,7 @@
 <!-- Release details (opened from the version chip or the green "Update available" chip). -->
 {#if dialogRelease}
 	<Dialog.Root bind:open={detailsOpen}>
-		<Dialog.Content class="flex max-h-[90dvh] flex-col gap-4 overflow-y-auto sm:max-w-lg">
+		<Dialog.Content class="flex max-h-[90dvh] flex-col gap-4 overflow-y-auto sm:max-w-3xl">
 			<Dialog.Header class="min-w-0 gap-1 text-left">
 				<Dialog.Title class="min-w-0 pr-8 break-words">{dialogRelease.name}</Dialog.Title>
 				<Dialog.Description class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
