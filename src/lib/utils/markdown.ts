@@ -1,12 +1,8 @@
-/* =============================================================================
- * SABERR MARKDOWN — render GitHub-flavoured release notes to a safe HTML subset.
- * snarkdown handles the parse; we then re-emit through a fixed tag allow-list (same
- * DOM-walk approach as the AniList description sanitizer) so the result is safe for
- * `{@html}`. Unknown tags are dropped but their inner text is kept; only `https://`
- * links/images survive, and links always open in a new tab.
- * ========================================================================== */
+/* Render release notes to safe HTML for `{@html}`: `marked` parses, `cleanChildren` sanitizes
+ * via the tag allow-list. ⚠️ `breaks: true` is load-bearing — GitHub renders a soft newline as
+ * `<br>`; without it release notes collapse to run-on lines. */
 
-import snarkdown from 'snarkdown';
+import { marked } from 'marked';
 
 const ALLOWED = new Set([
 	'BR',
@@ -83,7 +79,7 @@ function cleanChildren(parent: Node): string {
 /** Render markdown into a safe HTML subset for `{@html}`. */
 export function renderMarkdown(raw: string | null | undefined): string {
 	if (!raw) return '';
-	const html = snarkdown(raw);
+	const html = marked.parse(raw, { async: false, gfm: true, breaks: true });
 	if (typeof document === 'undefined') return html.replace(/<[^>]*>/g, '');
 	const doc = new DOMParser().parseFromString(html, 'text/html');
 	return cleanChildren(doc.body).trim();
