@@ -25,7 +25,7 @@
 	let results = $state<EntityPick[]>([]);
 	let searching = $state(false);
 	let searched = $state(false);
-	let idText = $state('');
+	let idText = $state<string | number>('');
 
 	let controller: AbortController | null = null;
 	let debounce: ReturnType<typeof setTimeout> | undefined;
@@ -69,7 +69,7 @@
 	}
 
 	function commitId() {
-		const n = Number(idText.trim());
+		const n = Number(idText);
 		if (Number.isInteger(n) && n > 0) onSelect(idPick(kind, n));
 		else onSelect(null);
 	}
