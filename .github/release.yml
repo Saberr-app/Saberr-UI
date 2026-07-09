@@ -7,8 +7,8 @@ changelog:
       labels: [feature, enhancement]
     - title: Bug Fixes
       labels: [bug, fix]
-    - title: UI & Design
-      labels: [ui, design]
+    - title: UI/UX & Design
+      labels: [ui, ux, design]
     - title: Maintenance
       labels: [chore, refactor, dependencies]
     - title: Other Changes
