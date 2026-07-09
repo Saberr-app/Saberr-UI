@@ -124,7 +124,12 @@
 	const dirty = $derived(
 		settingsChanged(withoutPassword(draft), withoutPassword(settings.current.qbit)) || passwordDirty
 	);
-	const urlError = $derived(validateHttpUrl(draft.qbit_base_url));
+
+	const urlError = $derived(
+		draft.qbit_base_url?.trim() && !/^https?:\/\//i.test(draft.qbit_base_url.trim())
+			? 'URL must start with http:// or https://'
+			: validateHttpUrl(draft.qbit_base_url)
+	);
 	const stagingEmpty = $derived(!draft.staging_directory?.trim());
 	const valid = $derived(!urlError && !mappingIncomplete);
 
@@ -185,14 +190,13 @@
 				htmlFor="qbit-host"
 				help="You can enter a local address (`http://ip_or_localhost:port`) or a custom domain (`https://qbit.example.com`)"
 				error={urlError}
-				showError={attempted}
 			>
 				<Input
 					id="qbit-host"
 					type="url"
 					placeholder="http://localhost:8080"
 					bind:value={draft.qbit_base_url}
-					aria-invalid={attempted && urlError ? 'true' : undefined}
+					aria-invalid={urlError ? 'true' : undefined}
 				/>
 			</SettingField>
 
@@ -220,7 +224,7 @@
 			</p>
 
 			<div class="pt-3">
-				<TestConnectionButton big action={() => testQbit(connection())} />
+				<TestConnectionButton big disabled={!!urlError} action={() => testQbit(connection())} />
 			</div>
 		</div>
 

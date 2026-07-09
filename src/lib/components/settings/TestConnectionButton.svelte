@@ -13,9 +13,17 @@
 		variant?: 'default' | 'secondary' | 'outline';
 		/** Enlarge to match end-of-section action buttons (default is inline-sized). */
 		big?: boolean;
+		/** Disable the button (e.g. while the connection form is invalid). */
+		disabled?: boolean;
 	}
 
-	let { label = 'Test connection', action, variant = 'secondary', big = false }: Props = $props();
+	let {
+		label = 'Test connection',
+		action,
+		variant = 'secondary',
+		big = false,
+		disabled = false
+	}: Props = $props();
 
 	let state = $state<'idle' | 'loading' | 'success' | 'error'>('idle');
 	let resetTimer: ReturnType<typeof setTimeout> | undefined;
@@ -52,7 +60,7 @@
 	size={big ? 'lg' : 'default'}
 	class={big ? 'h-11 px-6 text-base' : ''}
 	onclick={run}
-	disabled={state === 'loading'}
+	disabled={disabled || state === 'loading'}
 >
 	{#if state === 'loading'}
 		<Icon name="spinner" size={16} class="animate-spin" />
