@@ -9,7 +9,7 @@
 
 ---
 
-This project serves as the dashboard UI for the [Saberr](https://github.com/saberr-app/saberr).
+This project serves as the dashboard UI for [Saberr](https://github.com/saberr-app/saberr).
 
 ### AI Disclaimer
 
