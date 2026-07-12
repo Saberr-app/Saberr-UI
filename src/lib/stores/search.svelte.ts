@@ -2,7 +2,7 @@
  * SABERR GLOBAL-SEARCH STORE (runes) — header search box. FE page matches are derived
  * from `query`; anime hits `POST /search` under anti-spam rules: ≥3 chars, auto-fire only
  * when no settings page matched (else an opt-in button, persisted in-memory 20 min),
- * 300ms debounce (Enter skips).
+ * 500ms debounce (Enter skips).
  * ========================================================================== */
 
 import { searchAnime } from '$lib/api/search';
@@ -10,7 +10,7 @@ import { matchAll, hasSettingsMatch, type PageMatch } from '$lib/search/match';
 import type { AnimeResult } from '$lib/api/types';
 
 const MIN_CHARS = 3;
-const DEBOUNCE_MS = 300;
+const DEBOUNCE_MS = 500;
 const OPT_IN_TTL_MS = 20 * 60 * 1000;
 const ANIME_LIMIT = 5;
 const PAGE_LIMIT = 3;

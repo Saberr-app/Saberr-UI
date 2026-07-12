@@ -60,7 +60,7 @@
 			controller?.abort();
 			return;
 		}
-		debounce = setTimeout(() => run(v.trim()), 300);
+		debounce = setTimeout(() => run(v.trim()), 500);
 	}
 
 	function choose(pick: EntityPick) {
