@@ -11,6 +11,7 @@
 	import ToEpisodeStepper from './ToEpisodeStepper.svelte';
 	import EntitySearchField from './EntitySearchField.svelte';
 	import GranularityField from './GranularityField.svelte';
+	import SimpleSelect from '$lib/components/settings/SimpleSelect.svelte';
 	import type { MappingOverrideItem, MappingOverrideMode } from '$lib/api/types';
 	import type { EntityPick, OverrideDraft } from '$lib/mappings/overrides';
 	import {
@@ -31,6 +32,8 @@
 		open = $bindable(false),
 		editing = null
 	}: { open?: boolean; editing?: MappingOverrideItem | null } = $props();
+
+	const SEASON_TYPES = [{ value: 'AIRED_ORDER', label: 'Aired Order' }];
 
 	let draft = $state<OverrideDraft>(blankDraft());
 	let saving = $state(false);
@@ -134,15 +137,23 @@
 					onSelect={pickTvdb}
 				/>
 				<div class="mt-3 flex flex-wrap gap-4">
-					<div class="flex flex-col gap-1.5">
-						<Label class="text-xs text-muted-foreground">Season</Label>
-						<NumberStepper
-							value={draft.tvdb_season_number}
-							min={0}
-							onChange={(n) => (draft.tvdb_season_number = n ?? 0)}
-							ariaLabel="TVDB season number"
-							class="w-fit"
-						/>
+					<div class="flex gap-4">
+						<div class="flex flex-col gap-1.5">
+							<Label class="text-xs text-muted-foreground">Season type</Label>
+							<div class="w-36">
+								<SimpleSelect value="AIRED_ORDER" options={SEASON_TYPES} disabled />
+							</div>
+						</div>
+						<div class="flex flex-col gap-1.5">
+							<Label class="text-xs text-muted-foreground">Season</Label>
+							<NumberStepper
+								value={draft.tvdb_season_number}
+								min={0}
+								onChange={(n) => (draft.tvdb_season_number = n ?? 0)}
+								ariaLabel="TVDB season number"
+								class="w-fit"
+							/>
+						</div>
 					</div>
 					<!-- From/To stay glued as one wrap unit → Season drops alone on narrow screens. -->
 					<div class="flex gap-4">
