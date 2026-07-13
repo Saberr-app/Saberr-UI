@@ -3,7 +3,7 @@ import { readFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const BG = '#1c1f23';
-const CORNER = 0.2;
+const CORNER = 0.25;
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const SRC = `${ROOT}static/logo.svg`;
