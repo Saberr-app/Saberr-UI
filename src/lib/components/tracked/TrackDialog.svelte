@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
 	import type { TrackedAnimeItem, UserEntry } from '$lib/api/types';
-	import { TVDB_SEASON_TYPES } from '$lib/api/types';
+	import { TVDB_SEASON_TYPES, TVDB_SEASON_TYPE_LABELS } from '$lib/api/types';
 	import { settings } from '$lib/stores/settings.svelte';
 	import { tracked } from '$lib/stores/tracked.svelte';
 	import {
@@ -164,16 +164,9 @@
 	});
 
 	const seasonType = $derived(draft?.tvdb_settings.tvdb_season_type ?? 'official');
-	const SEASON_TYPE_LABELS: Record<(typeof TVDB_SEASON_TYPES)[number], string> = {
-		official: 'Official',
-		absolute: 'Absolute',
-		dvd: 'DVD',
-		alternate: 'Alternate',
-		regional: 'Regional'
-	};
 	const seasonTypeOptions = TVDB_SEASON_TYPES.map((t) => ({
 		value: t,
-		label: SEASON_TYPE_LABELS[t]
+		label: TVDB_SEASON_TYPE_LABELS[t]
 	}));
 
 	// Only the ACTIVE structuring mode's format fields are validated — the hidden group is filled

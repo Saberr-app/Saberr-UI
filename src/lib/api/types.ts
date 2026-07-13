@@ -899,6 +899,13 @@ export const TVDB_SEASON_TYPES: TVDBSeasonType[] = [
 	'alternate',
 	'regional'
 ];
+export const TVDB_SEASON_TYPE_LABELS: Record<TVDBSeasonType, string> = {
+	official: 'Aired Order',
+	absolute: 'Absolute',
+	dvd: 'DVD',
+	alternate: 'Alternate',
+	regional: 'Regional'
+};
 
 /** Whether a TVDB episode is a season, series, or midseason finale. */
 export type TVDBFinaleType = 'series' | 'season' | 'midseason';
