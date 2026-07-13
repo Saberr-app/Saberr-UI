@@ -4,7 +4,8 @@
  * (updated_fields/changes) are humanized generically.
  * ========================================================================== */
 
-import type { AuditLogItem } from '$lib/api/types';
+import type { AuditLogItem, TVDBSeasonType } from '$lib/api/types';
+import { TVDB_SEASON_TYPE_LABELS } from '$lib/api/types';
 import { str, num, asArray, asRecord } from './data';
 import { humanizeKey } from './labels';
 import { type AuditLink, magnetLink, downloadLink, trackedAnimeLink, browseLink } from './links';
@@ -185,7 +186,11 @@ export function buildAuditDetails(item: AuditLogItem): AuditDetails {
 			if (typeof d.tvdb_structure_enabled === 'boolean') {
 				rows.push({ label: 'Structuring', value: d.tvdb_structure_enabled ? 'TVDB' : 'AniList' });
 			}
-			pushStr(rows, 'TVDB season type', d.tvdb_season_type);
+			pushStr(
+				rows,
+				'TVDB season type',
+				TVDB_SEASON_TYPE_LABELS[d.tvdb_season_type as TVDBSeasonType] ?? d.tvdb_season_type
+			);
 			pushBool(rows, 'Show parent directory', d.show_parent_directory);
 			pushStr(rows, 'Show folder name', d.show_folder_name);
 			const groups = asArray(d.release_groups)
