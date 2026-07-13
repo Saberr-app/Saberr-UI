@@ -74,7 +74,7 @@
 	const LINKS: { label: string; href: string; logo?: { dark: string; light: string } }[] = [
 		{
 			label: 'GitHub',
-			href: 'https://github.com/somechazzy/saberr',
+			href: 'https://github.com/Saberr-app/Saberr',
 			logo: { dark: '/img/github-dark.png', light: '/img/github-light.png' }
 		}
 	];
