@@ -11,6 +11,7 @@
 	import { status } from '$lib/stores/status.svelte';
 	import { anilistMetadata } from '$lib/stores/anilist-metadata.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import InstallBanner from '$lib/components/pwa/InstallBanner.svelte';
 
 	let { children } = $props();
 
@@ -56,3 +57,4 @@
 </div>
 
 <MobileDrawer bind:open={drawerOpen} />
+<InstallBanner />

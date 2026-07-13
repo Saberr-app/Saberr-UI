@@ -1,9 +1,13 @@
 <script lang="ts">
 	import '../app.css';
+	import { onMount } from 'svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import { install } from '$lib/pwa/install.svelte';
 
 	let { children } = $props();
+
+	onMount(() => install.init());
 </script>
 
 <svelte:head>
