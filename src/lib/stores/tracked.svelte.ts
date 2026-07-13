@@ -11,6 +11,25 @@ import { entryBroadcast, type EntryChange, type EntryUpdate } from '$lib/anilist
 import { userEntryFromList } from '$lib/anilist/row';
 import { isStale } from '$lib/utils/cache';
 
+const FORCE_SYNC_COOLDOWN_MS = 3 * 60 * 1000;
+const FORCE_SYNC_KEY = 'saberr_tracked_force_sync_at';
+
+function forceSyncOnCooldown(): boolean {
+	try {
+		const raw = localStorage.getItem(FORCE_SYNC_KEY);
+		return raw != null && Date.now() - Number(raw) < FORCE_SYNC_COOLDOWN_MS;
+	} catch {
+		return false;
+	}
+}
+function markForceSync(): void {
+	try {
+		localStorage.setItem(FORCE_SYNC_KEY, String(Date.now()));
+	} catch {
+		/* non-fatal */
+	}
+}
+
 /** Project a tracked item to the shared bulk-reconcile currency. */
 const trackedToUpdate = (t: TrackedAnimeItem): EntryUpdate => ({
 	anilistId: t.anilist_id,
@@ -122,6 +141,8 @@ class TrackedStore {
 	private initialForceSync(): Promise<void> {
 		if (this.didInitialForceSync) return Promise.resolve();
 		this.didInitialForceSync = true;
+		if (forceSyncOnCooldown()) return Promise.resolve();
+		markForceSync();
 		return this.forceRevalidate();
 	}
 

@@ -167,7 +167,10 @@
 
 	// `context` + initial defaults are fixed for the collection's lifetime; capture once.
 	const ctx = untrack(() => context);
-	const init = untrack(() => ({ view: defaultView, sort: defaultSort, group: defaultGroup }));
+	const init = untrack(() => {
+		const mobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
+		return { view: mobile ? 'card' : defaultView, sort: defaultSort, group: defaultGroup };
+	});
 	// Mega-card view is Browse-only (needs the full anime metadata + synopsis).
 	const availableViews = VIEW_MODES.filter((v) => v.mode !== 'mega' || ctx === 'browse');
 
