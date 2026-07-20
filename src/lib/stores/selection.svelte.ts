@@ -1,7 +1,7 @@
 /* =============================================================================
  * SABERR SELECTION STORE (runes) — multi-select per list instance (`selectionId`:
  * 'season' | 'search' | 'list:<tab>'), at module scope so it survives nav/tab switches.
- * Rules: cap 50 (over-cap adds rejected, caller toasts); shift-range is a TOGGLE over the
+ * Rules: cap 25 (over-cap adds rejected, caller toasts); shift-range is a TOGGLE over the
  * inclusive anchor→click range in display order; anchor = last SELECTED item; empty exits mode.
  * ========================================================================== */
 
@@ -9,7 +9,7 @@ import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import type { AnimeRow } from '$lib/anilist/row';
 import type { AnilistAnimeUserStatus } from '$lib/api/types';
 
-export const MAX_SELECTION = 50;
+export const MAX_SELECTION = 25;
 
 /** Batch-action handlers `AnimeCollection` exposes so a per-item menu drives the same ops as the sticky-bar Edit menu. */
 export interface BatchMenuCtl {
