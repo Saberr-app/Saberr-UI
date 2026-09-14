@@ -141,7 +141,15 @@ const SETTINGS_TEXT: Record<string, { sections?: string[]; fields?: string[] }> 
 		]
 	},
 	'/settings/rss': {
-		fields: ['RSS Consumer', 'Auto-download torrents', 'RSS check frequency', 'Filters', 'Category']
+		fields: [
+			'RSS Consumer',
+			'Auto-download torrents',
+			'RSS check frequency',
+			'Filters',
+			'Category',
+			'RSS Proxy Setup',
+			'Download torrent files via proxy'
+		]
 	},
 	'/settings/processing': {
 		sections: ['Episode structuring'],

@@ -47,6 +47,15 @@ export async function testQbit(body: QbitConnection): Promise<boolean> {
 	return true;
 }
 
+export async function testRssProxy(rssProxyConfig: string): Promise<boolean> {
+	await apiFetch<void>('/api/v1/settings/rss_proxy/test', {
+		method: 'POST',
+		body: { rss_proxy_config: rssProxyConfig },
+		unwrap: false
+	});
+	return true;
+}
+
 export async function testDiscord(webhookUrl: string): Promise<boolean> {
 	await apiFetch<void>('/api/v1/settings/discord/test', {
 		method: 'POST',
