@@ -79,13 +79,15 @@
 			<div
 				class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-info/30 bg-info/5 px-3 py-2.5"
 			>
-				<Icon name="alert-triangle" size={16} class="shrink-0 text-info" />
-				<p class="min-w-0 flex-1 text-sm">
-					You're tracking <span class="font-semibold">{notOnListCount}</span>
-					{notOnListCount === 1 ? 'anime' : 'anime'} that
-					{notOnListCount === 1 ? "isn't" : "aren't"} on your AniList list.
-				</p>
-				<div class="flex items-center gap-2">
+				<div class="flex min-w-0 flex-1 basis-full items-center gap-3 sm:basis-80">
+					<Icon name="alert-triangle" size={16} class="shrink-0 text-info" />
+					<p class="min-w-0 text-sm">
+						You're tracking <span class="font-semibold">{notOnListCount}</span>
+						{notOnListCount === 1 ? 'anime' : 'anime'} that
+						{notOnListCount === 1 ? "isn't" : "aren't"} on your AniList list.
+					</p>
+				</div>
+				<div class="flex flex-wrap items-center gap-2">
 					<button
 						type="button"
 						onclick={onShowNotOnList}
@@ -111,10 +113,12 @@
 			<div
 				class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-success/30 bg-success/5 px-3 py-2.5"
 			>
-				<Icon name="rss" size={16} class="shrink-0 text-success" />
-				<p class="min-w-0 flex-1 text-sm">
-					You have releasing anime on your list that you aren't tracking yet.
-				</p>
+				<div class="flex min-w-0 flex-1 basis-full items-center gap-3 sm:basis-80">
+					<Icon name="rss" size={16} class="shrink-0 text-success" />
+					<p class="min-w-0 text-sm">
+						You have releasing anime on your list that you aren't tracking yet.
+					</p>
+				</div>
 				<div class="flex flex-wrap items-center gap-2">
 					{#if releasingWatchingCount > 0}
 						<button
@@ -143,12 +147,14 @@
 			<div
 				class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5"
 			>
-				<Icon name="completed" size={16} class="shrink-0 text-muted-foreground" />
-				<p class="min-w-0 flex-1 text-sm">
-					<span class="font-semibold">{finishedCount}</span>
-					tracked {finishedCount === 1 ? 'anime has' : 'anime have'} finished airing.
-				</p>
-				<div class="flex items-center gap-2">
+				<div class="flex min-w-0 flex-1 basis-full items-center gap-3 sm:basis-80">
+					<Icon name="completed" size={16} class="shrink-0 text-muted-foreground" />
+					<p class="min-w-0 text-sm">
+						<span class="font-semibold">{finishedCount}</span>
+						tracked {finishedCount === 1 ? 'anime has' : 'anime have'} finished airing.
+					</p>
+				</div>
+				<div class="flex flex-wrap items-center gap-2">
 					<button
 						type="button"
 						onclick={onShowFinished}
