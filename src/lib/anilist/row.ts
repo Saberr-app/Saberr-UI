@@ -20,6 +20,7 @@ import type {
 	UserEntry
 } from '$lib/api/types';
 import { coverImage, primaryStudio } from './media';
+import { fuzzyDateHasArrived } from './dates';
 import { resolveBackendUrl } from '$lib/config/api';
 import { noEnabledGroups } from '$lib/tracked/release-groups';
 import type { MutationContext } from './entry-actions';
@@ -230,6 +231,11 @@ export function rowFromTrackedItem(item: TrackedAnimeItem, globalPreferred: stri
 		episodeStats: item.episode_stats,
 		noDownloads: noEnabledGroups(item.release_profile?.preferred_release_groups ?? globalPreferred)
 	};
+}
+
+export function missingTvdbMapping(row: AnimeRow): boolean {
+	if (!row.tvdbStructureEnabled || row.tvdbId != null) return false;
+	return row.airingStatus === 'RELEASING' || fuzzyDateHasArrived(row.startDate);
 }
 
 /** Build the mutation context for entry actions from a row. */

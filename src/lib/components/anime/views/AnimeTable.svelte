@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type { AnimeRow } from '$lib/anilist/row';
-	import { rowMutationContext } from '$lib/anilist/row';
+	import { missingTvdbMapping, rowMutationContext } from '$lib/anilist/row';
 	import type { SelectionCtl } from '$lib/stores/selection.svelte';
 	import type { TrackingMenuCtl } from '$lib/tracked/menu';
 	import { contextMenu } from '$lib/stores/context-menu.svelte';
@@ -25,6 +25,7 @@
 	import AnimeContextMenu from '../AnimeContextMenu.svelte';
 	import SelectControls from '../SelectControls.svelte';
 	import StructuringBadge from '$lib/components/settings/StructuringBadge.svelte';
+	import MissingTvdbMappingDialog from '$lib/components/tracked/MissingTvdbMappingDialog.svelte';
 	import FormatBadge from '../FormatBadge.svelte';
 	import AiringBadge from '../AiringBadge.svelte';
 	import StatusBadge from '../StatusBadge.svelte';
@@ -94,6 +95,8 @@
 	let atEnd = $state(true);
 	let canScroll = $state(false);
 	let tableWidth = $state(0);
+
+	let noMappingOpen = $state(false);
 
 	function updateScroll() {
 		const el = scroller;
@@ -261,10 +264,28 @@
 												</div>
 											</div>
 										{:else if def.id === 'structure'}
-											<StructuringBadge
-												type={row.tvdbStructureEnabled ? 'tvdb' : 'anilist'}
-												class="h-4"
-											/>
+											{@const noMapping = missingTvdbMapping(row)}
+											{#if noMapping}
+												<button
+													type="button"
+													class="group inline-flex cursor-pointer items-center gap-1.5"
+													title="No TVDB mapping"
+													onclick={(e) => {
+														e.stopPropagation();
+														noMappingOpen = true;
+													}}
+												>
+													<StructuringBadge type="tvdb" class="h-4" />
+													<span
+														class="size-2.5 shrink-0 rounded-full bg-destructive transition-transform duration-150 group-hover:scale-150"
+													></span>
+												</button>
+											{:else}
+												<StructuringBadge
+													type={row.tvdbStructureEnabled ? 'tvdb' : 'anilist'}
+													class="h-4"
+												/>
+											{/if}
 										{:else if def.id === 'trackedEpisodes'}
 											<span class="whitespace-nowrap tabular-nums">
 												{#if row.fromEpisode != null}
@@ -485,3 +506,5 @@
 		</div>
 	{/if}
 </div>
+
+<MissingTvdbMappingDialog bind:open={noMappingOpen} />
