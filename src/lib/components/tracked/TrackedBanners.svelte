@@ -119,19 +119,19 @@
 					{#if releasingWatchingCount > 0}
 						<button
 							type="button"
-							onclick={() => goto('/list?tab=watching&tracked=false')}
+							onclick={() => goto('/list?tab=watching&tracked=false&airing=RELEASING')}
 							class="rounded-md border border-success/40 px-2.5 py-1 text-xs font-medium text-success transition-colors hover:bg-success/10"
 						>
-							Watching ({releasingWatchingCount})
+							Go to Watching ({releasingWatchingCount})
 						</button>
 					{/if}
 					{#if releasingPlanningCount > 0}
 						<button
 							type="button"
-							onclick={() => goto('/list?tab=planned&tracked=false')}
+							onclick={() => goto('/list?tab=planned&tracked=false&airing=RELEASING')}
 							class="rounded-md border border-success/40 px-2.5 py-1 text-xs font-medium text-success transition-colors hover:bg-success/10"
 						>
-							Plan to watch ({releasingPlanningCount})
+							Go to Plan to watch ({releasingPlanningCount})
 						</button>
 					{/if}
 					{@render dismissers('releasing')}

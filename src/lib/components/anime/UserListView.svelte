@@ -32,14 +32,20 @@
 		status,
 		onOpen,
 		initialTracked,
-		onTrackedChange
+		initialAiring,
+		onFiltersChange
 	}: {
 		status: ListTab;
 		onOpen: (row: AnimeRow) => void;
 		/** Seed the tracked filter from the URL (e.g. tracked-page banner); undefined = leave as-is. */
 		initialTracked?: boolean;
-		/** Reflect a tracked-filter change back to the URL. */
-		onTrackedChange?: (value: boolean | null) => void;
+		/** Seed the airing-status filter from the URL; undefined = leave as-is. */
+		initialAiring?: AnilistAnimeStatus[];
+		/** Reflect the URL-backed filters back to the URL. */
+		onFiltersChange?: (value: {
+			isTracked: boolean | null;
+			airingStatuses: AnilistAnimeStatus[];
+		}) => void;
 	} = $props();
 
 	const tab = $derived(userlist.get(status));
@@ -50,13 +56,21 @@
 	let debounce: ReturnType<typeof setTimeout> | undefined;
 
 	onMount(() => {
-		// A ?tracked deep link seeds the filter only when it differs from the tab's preserved state.
-		if (
-			initialTracked !== undefined &&
-			untrack(() => userlist.get(status).isTracked) !== initialTracked
-		) {
+		// ?tracked / ?airing deep links seed each filter only where it differs from the tab's
+		// preserved state; one setFilters keeps it to a single re-query.
+		const cur = untrack(() => userlist.get(status));
+		const seedTracked = initialTracked !== undefined && cur.isTracked !== initialTracked;
+		const seedAiring = initialAiring !== undefined && !sameSet(initialAiring, cur.airingStatuses);
+		if (seedTracked || seedAiring) {
 			selection.reset(selId);
-			userlist.setIsTracked(status, initialTracked);
+			userlist.setFilters(
+				status,
+				cur.season,
+				cur.year,
+				seedTracked ? initialTracked! : cur.isTracked,
+				seedAiring ? initialAiring! : cur.airingStatuses,
+				cur.formats
+			);
 		} else {
 			userlist.ensure(status);
 		}
@@ -200,13 +214,13 @@
 			draftAiringStatuses,
 			draftFormats
 		);
-		onTrackedChange?.(val); // keep the URL ?tracked in sync
+		onFiltersChange?.({ isTracked: val, airingStatuses: draftAiringStatuses }); // keep the URL in sync
 		filterOpen = false;
 	}
 	function clearFilters() {
 		selection.reset(selId);
 		userlist.setFilters(status, null, null, null, [], []);
-		onTrackedChange?.(null);
+		onFiltersChange?.({ isTracked: null, airingStatuses: [] });
 		draftSeason = draftYear = draftTracked = '';
 		draftAiringStatuses = [];
 		draftFormats = [];
