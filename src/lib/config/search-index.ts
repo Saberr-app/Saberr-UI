@@ -178,7 +178,8 @@ const SETTINGS_TEXT: Record<string, { sections?: string[]; fields?: string[] }> 
 			'Notify on new login',
 			'Notify on episode imported',
 			'Notify on episode upgraded',
-			'Notify on download/import failed'
+			'Notify on download/import failed',
+			'Send daily Missing Episodes Report'
 		]
 	},
 	'/settings/system': {

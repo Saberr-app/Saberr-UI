@@ -169,6 +169,7 @@ export interface DiscordSettings {
 	discord_notify_on_download_processed: boolean;
 	discord_notify_on_upgrade_download_processed: boolean;
 	discord_notify_on_download_failed: boolean;
+	discord_send_daily_missing_report: boolean;
 }
 
 /** Map of "Display name" -> "actual_token" (token serialized as `{actual_token}`). */

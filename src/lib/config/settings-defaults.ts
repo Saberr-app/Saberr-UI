@@ -75,7 +75,8 @@ const DEFAULTS: Settings = {
 		discord_notify_on_login: false,
 		discord_notify_on_download_processed: true,
 		discord_notify_on_upgrade_download_processed: false,
-		discord_notify_on_download_failed: true
+		discord_notify_on_download_failed: true,
+		discord_send_daily_missing_report: false
 	},
 	meta: {
 		show_directory_formatting_tokens: {
