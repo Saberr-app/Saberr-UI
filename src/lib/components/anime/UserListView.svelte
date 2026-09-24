@@ -253,6 +253,7 @@
 		enableFilter={false}
 		enableSelection
 		enableTracking
+		showIndex
 		selectionId={selId}
 		defaultView="list"
 		{onOpen}

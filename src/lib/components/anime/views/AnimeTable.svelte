@@ -54,7 +54,7 @@
 		columns: ColumnId[];
 		context: CollectionContext;
 		withPoster?: boolean;
-		/** Show a leading agnostic "#" index column (tracked list). */
+		/** Show a leading agnostic "#" index column. */
 		index?: boolean;
 		onOpen: (row: AnimeRow) => void;
 		onEdit: (row: AnimeRow) => void;

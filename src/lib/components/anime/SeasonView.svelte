@@ -54,6 +54,7 @@
 		excludeColumns={['season']}
 		enableSelection
 		enableTracking
+		showIndex
 		selectionId="season"
 		bind:searchText={browse.seasonSearch}
 		bind:activeFilter={browse.seasonFilter}
