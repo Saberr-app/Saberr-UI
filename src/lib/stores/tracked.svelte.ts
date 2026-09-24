@@ -229,6 +229,14 @@ class TrackedStore {
 		this.archived = this.archived.filter((t) => t.id !== item.id);
 	}
 
+	/** Move an item from the active list to the archived one after a single archive. */
+	markArchived(item: TrackedAnimeItem): void {
+		this.removeActiveByAnilist([item.anilist_id]);
+		if (!this.archivedLoaded) return;
+		const archived: TrackedAnimeItem = { ...item, status: 'ARCHIVED' };
+		this.archived = [archived, ...this.archived.filter((t) => t.id !== item.id)];
+	}
+
 	/** Remove items from the active list by anilist id (archived / deleted). */
 	removeActiveByAnilist(anilistIds: number[]): void {
 		const set = new Set(anilistIds);

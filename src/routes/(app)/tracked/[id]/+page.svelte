@@ -11,6 +11,7 @@
 	import { sortEpisodes, trackedEpisodeRange } from '$lib/tracked/episode';
 	import { noEnabledGroups } from '$lib/tracked/release-groups';
 	import { isDefaultProfile, joinShowPath } from '$lib/tracked/draft';
+	import { archiveTracked, unarchiveTracked } from '$lib/tracked/tracking-actions';
 	import { tracked } from '$lib/stores/tracked.svelte';
 	import { settings } from '$lib/stores/settings.svelte';
 	import { pageTitleOverride } from '$lib/stores/page-title.svelte';
@@ -28,6 +29,7 @@
 	import { mode } from 'mode-watcher';
 	import Icon from '$lib/components/Icon.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import StructuringBadge from '$lib/components/settings/StructuringBadge.svelte';
 	import TrackDialog from '$lib/components/tracked/TrackDialog.svelte';
 	import TrackedEpisodeRow from '$lib/components/tracked/TrackedEpisodeRow.svelte';
@@ -48,6 +50,9 @@
 	let loadingDown = $state(false);
 
 	let editOpen = $state(false);
+	let confirmArchiveOpen = $state(false);
+	let unarchiving = $state(false);
+	const isArchived = $derived(item?.status === 'ARCHIVED');
 
 	const lowest = $derived(episodes[0]?.episode_number ?? null);
 	const highest = $derived(episodes[episodes.length - 1]?.episode_number ?? null);
@@ -166,6 +171,33 @@
 		tracked.upsert(saved);
 	}
 
+	function onArchived() {
+		if (item) item = { ...item, status: 'ARCHIVED' };
+	}
+
+	async function archive() {
+		if (!item) return;
+		await archiveTracked(item.id);
+		tracked.markArchived(item);
+		onArchived();
+	}
+
+	async function unarchive() {
+		if (!item || unarchiving) return;
+		unarchiving = true;
+		try {
+			await unarchiveTracked(item.id);
+			item = { ...item, status: 'ACTIVE' };
+			tracked.removeArchivedByAnilist([item.anilist_id]);
+			// Re-enters the active list; the backend is already current, so no force_freshness.
+			void tracked.load(false);
+		} catch {
+			/* toasted */
+		} finally {
+			unarchiving = false;
+		}
+	}
+
 	// Feed the browser-tab title to the layout's single <title>; clear on leave so it reverts to the
 	// nav-derived title (a competing per-page <title> wouldn't reliably reset on unmount).
 	$effect(() => {
@@ -206,19 +238,26 @@
 				/>
 			{/if}
 			<div class="min-w-0 flex-1">
-				<div class="flex items-start gap-3">
+				<div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-start">
 					<div class="min-w-0 flex-1">
 						<h1 class="truncate text-lg font-semibold">{displayTitle(anime)}</h1>
 						{#if secondaryTitle(anime)}
 							<p class="truncate text-sm text-muted-foreground">{secondaryTitle(anime)}</p>
 						{/if}
 						<div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+							{#if isArchived}
+								<span
+									class="inline-flex items-center gap-1 rounded-md border border-border bg-muted px-1.5 py-0.5 font-medium"
+								>
+									<Icon name="archive" size={12} /> Archived
+								</span>
+							{/if}
 							{#if anime.format}<span>{formatLabel(anime.format)}</span>{/if}
 							<span>{seasonYearLabel(anime.season, anime.season_year)}</span>
 							{#if anime.episodes}<span>· {anime.episodes} eps</span>{/if}
 						</div>
 					</div>
-					<div class="flex shrink-0 items-center gap-1.5">
+					<div class="flex shrink-0 flex-wrap items-center gap-1.5">
 						<Button
 							href={`/rss?q=${encodeURIComponent(anime.romaji_title ?? anime.english_title ?? '')}`}
 							variant="outline"
@@ -236,6 +275,34 @@
 							<Icon name="refresh" size={15} class={refreshing ? 'animate-spin' : ''} />
 							<span class="hidden sm:inline">Force refresh</span>
 						</Button>
+						{#if isArchived}
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								disabled={unarchiving}
+								onclick={unarchive}
+								title="Unarchive"
+							>
+								<Icon
+									name={unarchiving ? 'spinner' : 'archive-restore'}
+									size={15}
+									class={unarchiving ? 'animate-spin' : ''}
+								/>
+								<span class="hidden sm:inline">Unarchive</span>
+							</Button>
+						{:else}
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onclick={() => (confirmArchiveOpen = true)}
+								title="Archive"
+							>
+								<Icon name="archive" size={15} />
+								<span class="hidden sm:inline">Archive</span>
+							</Button>
+						{/if}
 						<Button type="button" size="sm" onclick={() => (editOpen = true)}>
 							<Icon name="edit" size={15} /> Edit
 						</Button>
@@ -382,5 +449,18 @@
 		{/if}
 	</div>
 
-	<TrackDialog bind:open={editOpen} {item} {onSaved} onDeleted={() => goto('/tracked')} />
+	<TrackDialog
+		bind:open={editOpen}
+		{item}
+		{onSaved}
+		{onArchived}
+		onDeleted={() => goto('/tracked')}
+	/>
+	<ConfirmDialog
+		bind:open={confirmArchiveOpen}
+		title="Archive this tracked anime?"
+		description={`"${displayTitle(anime)}" will be moved to your archived list. You can unarchive it later.`}
+		confirmLabel="Archive"
+		onConfirm={archive}
+	/>
 {/if}
