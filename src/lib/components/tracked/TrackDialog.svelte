@@ -12,7 +12,7 @@
 	import { getAnime } from '$lib/api/anime';
 	import { validatePath } from '$lib/api/settings';
 	import { entryBroadcast } from '$lib/anilist/entry-broadcast';
-	import { deleteTracked } from '$lib/tracked/tracking-actions';
+	import { archiveTracked, deleteTracked } from '$lib/tracked/tracking-actions';
 	import { notifySuccess } from '$lib/api/notify';
 	import { displayTitle, secondaryTitle } from '$lib/anilist/titles';
 	import { formatLabel } from '$lib/anilist/enums';
@@ -60,12 +60,15 @@
 		summary = null,
 		item = null,
 		onSaved,
+		onArchived,
 		onDeleted
 	}: {
 		open?: boolean;
 		summary?: TrackAnimeSummary | null;
 		item?: TrackedAnimeItem | null;
 		onSaved?: (item: TrackedAnimeItem) => void;
+		/** Edit mode only — called after the tracked anime is archived. */
+		onArchived?: (item: TrackedAnimeItem) => void;
 		/** Edit mode only — called after the tracked anime is deleted (e.g. to navigate away). */
 		onDeleted?: (item: TrackedAnimeItem) => void;
 	} = $props();
@@ -89,6 +92,9 @@
 	let baselineJson = $state<string | null>(null);
 	let busy = $state(false);
 	let confirmDelete = $state(false);
+	let confirmArchive = $state(false);
+	// Snapshot at confirm time, so the prompt and the save-first step agree.
+	let archiveWithSave = $state(false);
 	let confirmDiscard = $state(false);
 	// Flipped on the first save attempt: until then, invalid fields stay unmarked.
 	let attempted = $state(false);
@@ -400,17 +406,54 @@
 	// (expanding the structuring section if needed) and jumps to the first instead of submitting.
 	async function trySave(unarchive = false) {
 		if (busy) return;
-		attempted = true;
-		if (!isValid) {
-			// A collapsed section may need a second pass (expand → render children) before the query hits.
-			await tick();
-			if (!focusFirstInvalid(contentEl)) {
-				await tick();
-				focusFirstInvalid(contentEl);
-			}
-			return;
-		}
+		if (!(await validateOrReveal())) return;
 		await save(unarchive);
+	}
+
+	async function validateOrReveal(): Promise<boolean> {
+		attempted = true;
+		if (isValid) return true;
+		// A collapsed section may need a second pass (expand → render children) before the query hits.
+		await tick();
+		if (!focusFirstInvalid(contentEl)) {
+			await tick();
+			focusFirstInvalid(contentEl);
+		}
+		return false;
+	}
+
+	/** Edit mode — pending edits must be valid, since they're saved before archiving. */
+	async function tryArchive() {
+		if (busy) return;
+		archiveWithSave = hasChanges;
+		if (archiveWithSave && !(await validateOrReveal())) return;
+		confirmArchive = true;
+	}
+
+	async function archive() {
+		if (!item) return;
+		busy = true;
+		try {
+			let current = item;
+			if (archiveWithSave) {
+				current = await updateTrackedAnime(
+					item.id,
+					draftToUpdate(
+						resolveDraftForSave(false),
+						settings.current.profile.preferred_release_groups,
+						item.release_group_settings
+					)
+				);
+				broadcast(current);
+				onSaved?.(current);
+			}
+			await archiveTracked(current.id);
+			tracked.markArchived(current);
+			onArchived?.(current);
+			open = false;
+		} finally {
+			busy = false;
+		}
 	}
 
 	/** Edit mode — delete the tracked anime (broadcast clears caches), then close. */
@@ -809,16 +852,30 @@
 
 			<Dialog.Footer class="shrink-0">
 				{#if isEdit}
-					<Button
-						type="button"
-						variant="destructive"
-						disabled={busy}
-						onclick={() => (confirmDelete = true)}
-						class="sm:mr-auto"
-					>
-						<Icon name="trash" size={15} />
-						Delete
-					</Button>
+					<div class="flex gap-2 sm:mr-auto">
+						<Button
+							type="button"
+							variant="destructive"
+							disabled={busy}
+							onclick={() => (confirmDelete = true)}
+							class="flex-1 sm:flex-none"
+						>
+							<Icon name="trash" size={15} />
+							Delete
+						</Button>
+						{#if !archived}
+							<Button
+								type="button"
+								variant="outline"
+								disabled={busy}
+								onclick={tryArchive}
+								class="flex-1 sm:flex-none"
+							>
+								<Icon name="archive" size={15} />
+								Archive
+							</Button>
+						{/if}
+					</div>
 				{/if}
 				<Button type="button" variant="outline" disabled={busy} onclick={() => (open = false)}>
 					Cancel
@@ -866,6 +923,15 @@
 		confirmLabel="Delete"
 		destructive
 		onConfirm={remove}
+	/>
+	<ConfirmDialog
+		bind:open={confirmArchive}
+		title="Archive this tracked anime?"
+		description={archiveWithSave
+			? `"${displayTitle(head)}" will be moved to your archived list after changes are saved. You can unarchive it later.`
+			: `"${displayTitle(head)}" will be moved to your archived list. You can unarchive it later.`}
+		confirmLabel="Archive"
+		onConfirm={archive}
 	/>
 {/if}
 
