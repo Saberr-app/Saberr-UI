@@ -146,6 +146,10 @@ export interface RssSettings {
 	auto_download: boolean;
 	rss_check_frequency: number;
 	rss_category: RssCategory;
+	/** Proxy URL — `{http|socks5|socks4}://[user[:pass]@]host:port`. Null = no proxy.
+	 *  Composed/parsed by `lib/rss/proxy.ts`. */
+	rss_proxy_config: string | null;
+	rss_proxy_torrent_files_enabled: boolean;
 }
 
 export interface ProcessingSettings {

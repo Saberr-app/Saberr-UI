@@ -54,7 +54,9 @@ const DEFAULTS: Settings = {
 	rss: {
 		auto_download: true,
 		rss_check_frequency: 600,
-		rss_category: 'English Translated'
+		rss_category: 'English Translated',
+		rss_proxy_config: null,
+		rss_proxy_torrent_files_enabled: false
 	},
 	processing: {
 		default_destination_directory: null,
