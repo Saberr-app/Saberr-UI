@@ -77,6 +77,9 @@ const DEFAULTS: Settings = {
 		discord_notify_on_upgrade_download_processed: false,
 		discord_notify_on_download_failed: true
 	},
+	mappings: {
+		hot_mapping_overrides_enabled: true
+	},
 	meta: {
 		show_directory_formatting_tokens: {
 			'AniList Title (Japanese)': 'anilist_title_japanese',

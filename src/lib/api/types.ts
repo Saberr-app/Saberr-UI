@@ -171,6 +171,10 @@ export interface DiscordSettings {
 	discord_notify_on_download_failed: boolean;
 }
 
+export interface MappingsSettings {
+	hot_mapping_overrides_enabled: boolean;
+}
+
 /** Map of "Display name" -> "actual_token" (token serialized as `{actual_token}`). */
 export type FormattingTokens = Record<string, string>;
 
@@ -191,6 +195,7 @@ export interface Settings {
 	rss: RssSettings;
 	processing: ProcessingSettings;
 	discord: DiscordSettings;
+	mappings: MappingsSettings;
 	meta: SettingsMeta;
 }
 

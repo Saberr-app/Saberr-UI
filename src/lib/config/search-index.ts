@@ -158,6 +158,7 @@ const SETTINGS_TEXT: Record<string, { sections?: string[]; fields?: string[] }> 
 			'Relations / offsets',
 			'AniList ↔ TVDB mappings',
 			'Refresh mappings',
+			'Enable hot mapping overrides',
 			'AniList anime',
 			'TVDB series',
 			'Season',
