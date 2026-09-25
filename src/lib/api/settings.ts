@@ -12,6 +12,7 @@ import type {
 	RssSettings,
 	ProcessingSettings,
 	DiscordSettings,
+	MappingsSettings,
 	QbitSettings,
 	QbitSettingsUpdate,
 	QbitConnection,
@@ -36,6 +37,9 @@ export const updateProcessing = (body: ProcessingSettings) =>
 
 export const updateDiscord = (body: DiscordSettings) =>
 	apiFetch<DiscordSettings>('/api/v1/settings/discord', { method: 'PUT', body });
+
+export const updateMappings = (body: MappingsSettings) =>
+	apiFetch<MappingsSettings>('/api/v1/settings/mappings', { method: 'PUT', body });
 
 export const updateQbit = (body: QbitSettingsUpdate) =>
 	apiFetch<QbitSettings>('/api/v1/settings/qbit/service', { method: 'PUT', body });

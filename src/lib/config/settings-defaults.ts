@@ -80,6 +80,9 @@ const DEFAULTS: Settings = {
 		discord_notify_on_download_failed: true,
 		discord_send_daily_missing_report: false
 	},
+	mappings: {
+		hot_mapping_overrides_enabled: true
+	},
 	meta: {
 		show_directory_formatting_tokens: {
 			'AniList Title (Japanese)': 'anilist_title_japanese',

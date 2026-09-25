@@ -4,11 +4,12 @@
 	import { mappings } from '$lib/stores/mappings.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import RelativeTime from '$lib/components/RelativeTime.svelte';
+	import HotMappingsToggle from './HotMappingsToggle.svelte';
 
 	const stats = $derived(mappings.stats);
 </script>
 
-<div class="grid gap-4 sm:grid-cols-2">
+<div class="grid items-start gap-4 sm:grid-cols-2">
 	<div class="rounded-lg border border-border bg-card p-4">
 		<div class="flex items-center gap-2 text-xs text-muted-foreground">
 			<Icon name="layers" size={14} class="text-info" />
@@ -24,18 +25,24 @@
 		{/if}
 	</div>
 
-	<div class="rounded-lg border border-border bg-card p-4">
-		<div class="flex items-center gap-2 text-xs text-muted-foreground">
-			<Icon name="mappings" size={14} class="text-affirmative" />
-			AniList ↔ TVDB mappings
-		</div>
-		<div class="mt-1.5 text-2xl font-semibold tabular-nums">
-			{stats ? stats.anilist_tvdb_mappings_count.toLocaleString() : '—'}
-		</div>
-		{#if stats}
-			<div class="text-xs text-muted-foreground">
-				Refreshed <RelativeTime iso={stats.anilist_tvdb_mappings_last_updated_at} coarseSubMinute />
+	<div class="min-w-0">
+		<div class="rounded-t-lg border border-border bg-card p-4">
+			<div class="flex items-center gap-2 text-xs text-muted-foreground">
+				<Icon name="mappings" size={14} class="text-affirmative" />
+				AniList ↔ TVDB mappings
 			</div>
-		{/if}
+			<div class="mt-1.5 text-2xl font-semibold tabular-nums">
+				{stats ? stats.anilist_tvdb_mappings_count.toLocaleString() : '—'}
+			</div>
+			{#if stats}
+				<div class="text-xs text-muted-foreground">
+					Refreshed <RelativeTime
+						iso={stats.anilist_tvdb_mappings_last_updated_at}
+						coarseSubMinute
+					/>
+				</div>
+			{/if}
+		</div>
+		<HotMappingsToggle class="rounded-b-lg border border-t-0 border-border bg-muted/40 px-4 py-3" />
 	</div>
 </div>
