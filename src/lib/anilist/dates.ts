@@ -53,3 +53,14 @@ export function todayFuzzyDate(now: Date = new Date()): AnilistDate {
 /** True when no part of the date is set. */
 export const isFuzzyEmpty = (d: AnilistDate | null | undefined): boolean =>
 	!d || (d.year == null && d.month == null && d.day == null);
+
+/** True when a (possibly partial) fuzzy date is today or earlier, browser-local. A missing
+ *  month/day resolves to the earliest it could be (Jan 1st), so a past year counts as arrived. */
+export function fuzzyDateHasArrived(
+	d: AnilistDate | null | undefined,
+	now: Date = new Date()
+): boolean {
+	if (d?.year == null) return false;
+	const start = new Date(d.year, (d.month ?? 1) - 1, d.day ?? 1);
+	return start.getTime() <= new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+}

@@ -247,6 +247,7 @@
 		enableFilter={false}
 		enableSelection
 		enableTracking
+		showIndex
 		selectionId="search"
 		defaultView="list"
 		{onOpen}

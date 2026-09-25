@@ -132,7 +132,7 @@
 		enableTracking?: boolean;
 		/** Tracked page viewing the archived list (offer Unarchive; batch = delete only). */
 		archivedView?: boolean;
-		/** Show the leading agnostic "#" index column (tracked list, table views). */
+		/** Show the leading agnostic "#" index column (table views). */
 		showIndex?: boolean;
 		/** Resolve a row's already-loaded tracked item (tracked page) to skip the edit GET. */
 		resolveTrackedItem?: (row: AnimeRow) => TrackedAnimeItem | undefined;

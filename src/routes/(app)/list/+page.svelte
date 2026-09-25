@@ -2,6 +2,8 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import type { AnimeRow } from '$lib/anilist/row';
+	import type { AnilistAnimeStatus } from '$lib/api/types';
+	import { ANILIST_ANIME_STATUSES } from '$lib/api/types';
 	import { LIST_TABS, type ListTab } from '$lib/stores/userlist.svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import UserListView from '$lib/components/anime/UserListView.svelte';
@@ -18,6 +20,18 @@
 		return v === 'true' ? true : v === 'false' ? false : undefined;
 	});
 
+	// Optional airing-status deep link (?airing=RELEASING,FINISHED), same origin as ?tracked.
+	const initialAiring = $derived.by<AnilistAnimeStatus[] | undefined>(() => {
+		const v = page.url.searchParams.get('airing');
+		if (!v) return undefined;
+		const parsed = v
+			.split(',')
+			.filter((s): s is AnilistAnimeStatus =>
+				(ANILIST_ANIME_STATUSES as readonly string[]).includes(s)
+			);
+		return parsed.length ? parsed : undefined;
+	});
+
 	function setTab(t: ListTab) {
 		goto(t === 'watching' ? '/list' : `/list?tab=${t}`, {
 			replaceState: true,
@@ -30,11 +44,15 @@
 		goto(`/browse?anilist_id=${row.anilistId}`);
 	}
 
-	// Reflect a tracked-filter change to the URL (?tracked=true|false, removed for "Either").
-	function onTrackedChange(value: boolean | null) {
+	// Reflect the URL-backed filters back to the URL (each param dropped when unset).
+	function onFiltersChange(value: {
+		isTracked: boolean | null;
+		airingStatuses: AnilistAnimeStatus[];
+	}) {
 		const parts: string[] = [];
 		if (tab !== 'watching') parts.push(`tab=${tab}`);
-		if (value !== null) parts.push(`tracked=${value}`);
+		if (value.isTracked !== null) parts.push(`tracked=${value.isTracked}`);
+		if (value.airingStatuses.length) parts.push(`airing=${value.airingStatuses.join(',')}`);
 		const qs = parts.join('&');
 		goto(qs ? `/list?${qs}` : '/list', { replaceState: true, keepFocus: true, noScroll: true });
 	}
@@ -62,5 +80,11 @@
 </div>
 
 {#key tab}
-	<UserListView status={tab} onOpen={openAnime} {initialTracked} {onTrackedChange} />
+	<UserListView
+		status={tab}
+		onOpen={openAnime}
+		{initialTracked}
+		{initialAiring}
+		{onFiltersChange}
+	/>
 {/key}
