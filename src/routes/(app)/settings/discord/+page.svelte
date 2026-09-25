@@ -250,6 +250,12 @@
 					label="Notify on download/import failed"
 					bind:checked={draft.discord_notify_on_download_failed}
 				/>
+				<div class="mt-2">
+					<CheckboxField
+						label="Send daily Missing Episodes Report"
+						bind:checked={draft.discord_send_daily_missing_report}
+					/>
+				</div>
 			</div>
 		</div>
 
